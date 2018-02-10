@@ -16,3 +16,17 @@ def render_state
     end
     puts "_" * 40
 end
+
+def update_state(update)
+    update.each do |port, (movie, version_number)|
+        next if port.nil?
+
+        if [movie, version_number].any?(&:nil?)
+            STATE[port] ||= nil
+        else
+            STATE[port] = [STATE[port], [movie, version_number]].compact.max_by(&:last)
+        end
+
+    end
+
+end
