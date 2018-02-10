@@ -27,21 +27,26 @@ every(8.seconds) do
     puts "My new favorite movie is #{@favorite_movie.green}"
 end
 
-ren
-
 every(3.seconds) do
     STATE.dup.each_key do |peer_port|
         next if peer_port == PORT
         puts "Gossiping with #{peer_port}... blah blah"
-        their_state = Client.gossip(peer_port, JSON.dump(STATE))
-        update_state(JSON.parse(their_state))
+        puts "state is #{STATE.to_s.blue}"
+        begin
+            their_state = Client.gossip(peer_port, JSON.dump(STATE))
+            update_state(JSON.parse(their_state))
+        rescue Faraday::ConnectionFailed => e
+            puts e
+            STATE.delete(peer_port)
+        end
+
     end
     render_state
 end
 
-# @param state
+# @params state
 post '/gossip' do
-    their_state = param['state']
+    their_state = params['state']
     update_state(JSON.parse(their_state))
     JSON.dump(STATE)
 end
